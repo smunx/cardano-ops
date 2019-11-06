@@ -61,6 +61,15 @@ let
       nixpkgs.overlays = import ../overlays sources;
     } args;
 
+  mkExplorerNode = def: {
+    inherit (def) name;
+    value = {
+      deployment.ec2.region = def.region;
+      imports = [ medium ../roles/explorer.nix ];
+      # TODO: Put the services here
+    };
+  };
+
 in {
   network.description = "shelley-cluster";
   network.enableRollback = true;

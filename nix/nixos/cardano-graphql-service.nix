@@ -131,5 +131,17 @@ in {
         node ${fe}/index.js
       '';
     };
+    networking.firewall.allowedTCPPorts = [ 443 ];
+    services.nginx = {
+      enable = true;                                          # Enable Nginx
+      recommendedGzipSettings = true;
+      recommendedOptimisation = true;
+      recommendedProxySettings = true;
+      virtualHosts."explorer.example.org" =  {                # Explorer hostname
+        enableACME = true;                                    # Use ACME certs
+        forceSSL = true;                                      # Force SSL
+        locations."/".proxyPass = "http://localhost:3100/";   # Proxy Explorer
+      };
+    };
   };
 }

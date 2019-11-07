@@ -5,12 +5,13 @@ let
   iohkLib = import ../lib.nix { };
   cluster = "mainnet";
   targetEnv = iohkLib.cardanoLib.environments.${cluster};
-  host = "explorer.example.com";
+  host = "explorer.mcwhirter.io";
 in {
   imports = [
     (sources.cardano-node + "/nix/nixos")
-    ../nix/nixos/cardano-exporter-service.nix
-    ../nix/nixos/cardano-graphql-service.nix
+    ../../cardano-explorer/nix/nixos
+    ../../cardano-explorer/nix/nixos/cardano-exporter-service.nix
+    ../../cardano-explorer/nix/nixos/cardano-graphql-service.nix
   ];
   services.cardano-node = {
     environment = cluster;
@@ -24,31 +25,17 @@ in {
     socketPath = "/run/cardano-node/node-core-0.socket";
   };
   services.cardano-explorer-api.enable = true;
+  networking.firewall.allowedTCPPorts = [ 443 ];
+
   services.nginx = {
-    virtualHosts.${host} = {
-      default = true;
-      locations."/api/".extraConfig = ''
-        proxy_pass http://localhost:8100/api/;
-        proxy_set_header Host $host;
-        proxy_set_header REMOTE_ADDR $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-      '';
-    };
-  };
-  systemd.services = {
-    cardano-explorer-node = {
-      wants = [ "cardano-node.service" ];
-      serviceConfig.PermissionsStartOnly = "true";
-      preStart = ''
-        for x in {1..24}; do
-          [ -S ${config.services.cardano-exporter.socketPath} ] && break
-          echo loop $x: waiting for ${config.services.cardano-exporter.socketPath} 5 sec...
-          sleep 5
-        done
-        chgrp cexplorer ${config.services.cardano-exporter.socketPath}
-        chmod g+w ${config.services.cardano-exporter.socketPath}
-      '';
+    enable = true;                                          # Enable Nginx
+    recommendedGzipSettings = true;
+    recommendedOptimisation = true;
+    recommendedProxySettings = true;
+    virtualHosts."explorer.mcwhirter.io" = {                # Explorer hostname
+      enableACME = true;                                    # Use ACME certs
+      forceSSL = true;                                      # Force SSL
+      locations."/".proxyPass = "http://localhost:3100/";   # Proxy Explorer
     };
   };
 }

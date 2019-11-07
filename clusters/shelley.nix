@@ -66,7 +66,6 @@ let
     value = {
       deployment.ec2.region = def.region;
       imports = [ medium ../roles/explorer.nix ];
-      # TODO: Put the services here
     };
   };
 

@@ -67,7 +67,7 @@ let
       };
       imports = [
         xlarge
-        ../roles/explorer.nix
+        #../roles/explorer.nix
       ]
       # TODO: remove module when the new explorer is available
       ++ lib.optional (globals.withLegacyExplorer) ../roles/explorer-legacy.nix;

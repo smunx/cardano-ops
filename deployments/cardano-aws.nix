@@ -100,6 +100,21 @@ let
           }
         ) orgs)
         regions);
+
+      route53HostedZones.hs = {
+        name = "${pkgs.globals.domain}";
+        comment = "Hosted zone for nixos.org";
+      };
+
+      resources.route53RecordSets = {
+        a-record = { resources, ... }: {
+          zoneId = resources.route53HostedZones.hs;
+          domainName = "relays-new.${pkgs.globals.domain}";
+          ttl = 300;
+          recordValues = map (n: resources.elasticIPs."${n.name}-ip".address) relayNodes;
+          recordType = "A";
+        };
+      };
     };
     defaults = { name, resources, config, ... }: {
       deployment.ec2 = {

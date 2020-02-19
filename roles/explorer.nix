@@ -38,6 +38,7 @@ let
   topology =  builtins.toFile "topology.yaml" (builtins.toJSON {
     Producers = producers;
   });
+  socketPath = nodeCfg.socketPath or "/run/cardano-node/node-${toString nodeId}.socket";
 in {
   imports = [
     (sourcePaths.cardano-node + "/nix/nixos")
@@ -123,7 +124,7 @@ in {
     enable = true;
     cluster = globals.environmentName;
     environment = globals.environmentConfig;
-    socketPath = lib.mkForce (config.services.cardano.socketPath or "/run/cardano-node/node-${toString nodeId}.socket");
+    socketPath = lib.mkForce socketPath;
     logConfig = iohkNix.cardanoLib.defaultExplorerLogConfig // { hasPrometheus = [ hostAddr 12698 ]; };
     #environment = targetEnv;
   };
@@ -148,7 +149,7 @@ in {
   services.cardano-explorer-webapi.enable = true;
   services.cardano-tx-submit-webapi = {
     environment = globals.environmentConfig;
-    socketPath = lib.mkForce (config.services.cardano.socketPath or "/run/cardano-node/node-${toString nodeId}.socket");
+    socketPath = lib.mkForce socketPath;
   };
   networking.firewall.allowedTCPPorts = [ 80 443 ];
 

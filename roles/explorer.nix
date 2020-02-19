@@ -146,7 +146,10 @@ in {
     cluster = globals.environmentName;
   };
   services.cardano-explorer-webapi.enable = true;
-  services.cardano-tx-submit-webapi.environment = globals.environmentConfig;
+  services.cardano-tx-submit-webapi = {
+    environment = globals.environmentConfig;
+    socketPath = lib.mkForce (config.services.cardano.socketPath or "/run/cardano-node/node-${toString nodeId}.socket");
+  };
   networking.firewall.allowedTCPPorts = [ 80 443 ];
 
   services.nginx = {

@@ -35,20 +35,9 @@ let
     port = nodePort;
     valency = 1;
   }) (map (x: x.name) globals.topology.coreNodes);
-  topology =  builtins.toFile "topology.yaml" (builtins.toJSON (lib.mapAttrsToList (nodeName: node: {
-        nodeId = if (nodeName == name)
-            then nodeId
-            else node.config.node.nodeId;
-        nodeAddress = {
-          addr = if (nodeName == name)
-            then hostAddr
-            else hostName nodeName;
-          port = nodePort;
-        };
-        producers = if (nodeName == name)
-          then producers
-          else [];
-      }) cardanoNodes));
+  topology =  builtins.toFile "topology.yaml" (builtins.toJSON {
+    Producers = producers;
+  });
 in {
   imports = [
     (sourcePaths.cardano-node + "/nix/nixos")
@@ -71,10 +60,9 @@ in {
   services.cardano-graphql.enable = true;
   services.cardano-node = {
     enable = true;
-    inherit nodeId;
+    inherit nodeId topology;
     environment = globals.environmentName;
     # extraArgs = [ "+RTS" "-N2" "-A10m" "-qg" "-qb" "-M3G" "-RTS" ];
-    inherit topology nodeId;
     environments = {
       "${globals.environmentName}" = globals.environmentConfig;
     };
@@ -101,7 +89,7 @@ in {
     enable = true;
     servers = [ "127.0.0.1" ];
   };
-  
+
   users.users.cardano-node.extraGroups = [ "keys" ];
 
   deployment.keys = {

@@ -123,7 +123,7 @@ in {
     enable = true;
     cluster = globals.environmentName;
     environment = globals.environmentConfig;
-    socketPath = lib.mkForce "/run/cardano-node/node-${toString nodeId}.socket"; # TODO: ref nodeCf.socketPath for next release (1.7)
+    socketPath = lib.mkForce (config.services.cardano.socketPath or "/run/cardano-node/node-${toString nodeId}.socket");
     logConfig = iohkNix.cardanoLib.defaultExplorerLogConfig // { hasPrometheus = [ hostAddr 12698 ]; };
     #environment = targetEnv;
   };

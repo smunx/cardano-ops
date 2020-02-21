@@ -1,4 +1,6 @@
 { targetEnv
+, nano
+, small
 , medium
 , xlarge
 , xlarge-monitor
@@ -111,8 +113,8 @@ let
       };
       deployment.ec2.region = def.region;
       imports = [
-        medium
         ../roles/relay.nix
+        (if (builtins.length def.producers > 1) then small else nano)
       ];
     };
   };
